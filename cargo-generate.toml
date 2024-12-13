@@ -2,4 +2,4 @@
 
 [template]
 cargo_generate_version = ">=0.20.0"
-sub_templates = ["simple", "simple-async", "component"]
+sub_templates = ["hello-world", "simple", "simple-async", "component"]

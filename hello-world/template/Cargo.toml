@@ -1,0 +1,11 @@
+[package]
+name = "{{project-name}}"
+version = "0.1.0"
+authors = ["{{authors}}"]
+license = "MIT"
+edition = "2021"
+
+[dependencies]
+color-eyre = "0.6.3"
+crossterm = "0.28.1"
+ratatui = "0.29.0"
