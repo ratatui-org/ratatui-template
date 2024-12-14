@@ -1,3 +1,4 @@
+use crossterm::event::KeyEvent;
 use serde::{Deserialize, Serialize};
 use strum::Display;
 
@@ -8,6 +9,7 @@ pub enum Action {
     Resize(u16, u16),
     Suspend,
     Resume,
+    RawKeyEvent(KeyEvent),
     Quit,
     ClearScreen,
     Error(String),

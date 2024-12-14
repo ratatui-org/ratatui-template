@@ -110,21 +110,36 @@ impl App {
         let Some(keymap) = self.config.keybindings.get(&self.mode) else {
             return Ok(());
         };
-        match keymap.get(&vec![key]) {
-            Some(action) => {
+        if let Some(action) = keymap.get(&vec![key]) {
+            info!("Got action: {action:?}");
+            // Look for components in editing mode
+            // and that should receive a raw key event instead of the action.
+            for component in &self.components {
+                // Is it in editing mode and is the action not in the escape list ?
+                if component.is_editing() && !component.escape_editing_mode().contains(action) {
+                    info!("Action was sent as raw key");
+                    action_tx.send(Action::RawKeyEvent(key))?;
+                    return Ok(());
+                }
+            }
+            // Send the actual action to components
+            action_tx.send(action.clone())?;
+        } else {
+            // If there is a component in editing mode, send the raw key
+            if self.components.iter().any(|c| c.is_editing()) {
+                info!("Got raw key: {key:?}");
+                action_tx.send(Action::RawKeyEvent(key))?;
+                return Ok(());
+            }
+
+            // If the key was not handled as a single key action,
+            // then consider it for multi-key combinations.
+            self.last_tick_key_events.push(key);
+
+            // Check for multi-key combinations
+            if let Some(action) = keymap.get(&self.last_tick_key_events) {
                 info!("Got action: {action:?}");
                 action_tx.send(action.clone())?;
-            }
-            _ => {
-                // If the key was not handled as a single key action,
-                // then consider it for multi-key combinations.
-                self.last_tick_key_events.push(key);
-
-                // Check for multi-key combinations
-                if let Some(action) = keymap.get(&self.last_tick_key_events) {
-                    info!("Got action: {action:?}");
-                    action_tx.send(action.clone())?;
-                }
             }
         }
         Ok(())
